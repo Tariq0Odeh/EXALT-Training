@@ -120,3 +120,48 @@ document.addEventListener('DOMContentLoaded', () => {
     chooseAndDisplayRandomEngineers();
   }
 });
+
+
+
+// const addUserButton = document.getElementById('addUserButton');
+//     addUserButton.addEventListener('click', addNewUser);
+
+//     function addNewUser() {
+//       const nameInput = document.getElementById('nameInput').value;
+//       const emailInput = document.getElementById('emailInput').value;
+//       const phoneInput = document.getElementById('phoneInput').value;
+//       const streetInput = document.getElementById('streetInput').value;
+//       const suiteInput = document.getElementById('suiteInput').value;
+//       const cityInput = document.getElementById('cityInput').value;
+//       const zipcodeInput = document.getElementById('zipcodeInput').value;
+
+//       if (!nameInput || !emailInput) {
+//         alert('Name and Email are required fields!');
+//         return;
+//       }
+
+//       const newUser = {
+//         name: nameInput,
+//         email: emailInput,
+//         phone: phoneInput,
+//         address: {
+//           street: streetInput,
+//           suite: suiteInput,
+//           city: cityInput,
+//           zipcode: zipcodeInput,
+//         },
+//       };
+
+//       // You can add further logic to validate the user input if needed
+
+//       // Here you can perform actions with the new user data, like saving it to the server, etc.
+
+//       // Clear the input fields after adding the user
+//       document.getElementById('nameInput').value = '';
+//       document.getElementById('emailInput').value = '';
+//       document.getElementById('phoneInput').value = '';
+//       document.getElementById('streetInput').value = '';
+//       document.getElementById('suiteInput').value = '';
+//       document.getElementById('cityInput').value = '';
+//       document.getElementById('zipcodeInput').value = '';
+//     }
