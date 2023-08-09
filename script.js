@@ -1,6 +1,7 @@
 const profilesTemplate = document.querySelector("[engineer-profiles-template]");
 const profilesContainer = document.querySelector("[engineer-profiles-container]");
 const profileSearch = document.querySelector("[profile-search]");
+
 const numberOfProfiles = 8;
 
 // let profilesObj = [
@@ -115,4 +116,43 @@ profileSearch.addEventListener("input", (event) => {
         profilesContainer.appendChild(profile);
     });  
 });
+    
+// Display full data (Popup)
+const showFullProfile = (profile) => {
+    let hiredColor = 'red'
+    if (profile.hired){
+        hiredColor = 'green'
+    }
 
+    const popupContent = `
+        <title>Engineer's Full Profiles</title>
+
+        <div class="full-profile-popup">
+            <h2>${profile.name}</h2>
+            <p>Age: ${profile.age}</p>
+            <p>Email: ${profile.email}</p>
+            <p>Phone: ${profile.phone}</p>
+            <p>City: ${profile.city}</p>
+            <h1>Hired: ${profile.hired}</p>
+        </div>
+
+        <style>
+        h2 {
+            color: black;
+            text-align: center;
+        }
+
+        p{
+            text-align: center;
+        }
+
+        h1 {
+            text-align: center;
+            color: ${hiredColor};
+        }
+        </style>
+    `;
+
+    const popupWindow = window.open('', 'Engineer Profile', 'width=400,height=300');
+    popupWindow.document.body.innerHTML = popupContent;
+}
