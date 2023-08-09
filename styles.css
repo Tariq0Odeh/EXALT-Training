@@ -92,3 +92,9 @@ button:active {
   font-size: 15px;
 }
 
+#hiredButton{
+  padding: 7px 30px;
+  background-color: #252424;
+  color: #CCC;
+  font-weight: bold;
+}
