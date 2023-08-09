@@ -1,49 +1,21 @@
 const profilesTemplate = document.querySelector("[engineer-profiles-template]");
-const profilesContainer = document.querySelector("[engineer-profiles-container]");
+let  profilesContainer = document.querySelector("[engineer-profiles-container]");
 const profileSearch = document.querySelector("[profile-search]");
-
+let tempProfileContainer = []
 const numberOfProfiles = 8;
 
-// let profilesObj = [
-//     {name: "Sara Smith", age: 30, email: "sara.smith@example.com", phone: "1234567890", city: "New York", hired: true},
-//     {name: "John Doe", age: 28, email: "john.doe@email.com", phone: "9876543210", city: "Los Angeles", hired: false},
-//     {name: "Emily Johnson", age: 22, email: "emily.j@example.net", phone: "5551234567", city: "Chicago", hired: true},
-//     {name: "Michael Brown", age: 35, email: "michael_b@example.org", phone: "4567890123", city: "Houston", hired: true},
-//     {name: "Jessica Williams", age: 29, email: "jessica.w@example.com", phone: "3216549870", city: "Miami", hired: false},
-//     {name: "Daniel Lee", age: 31, email: "d.lee@example.net", phone: "7890123456", city: "San Francisco", hired: true},
-//     {name: "Ashley Martinez", age: 27, email: "ashley.m@example.org", phone: "2345678901", city: "Seattle", hired: false},
-//     {name: "Benjamin Turner", age: 26, email: "benjamin.t@example.net", phone: "8765432109", city: "Chicago", hired: false},
-//     {name: "Avery Foster", age: 31, email: "avery.f@example.org", phone: "2109876543", city: "Miami", hired: true},
-//     {name: "Ethan Cox", age: 28, email: "ethan.c@email.com", phone: "5432109876", city: "New York", hired: false},
-//     {name: "Lina Ahmed", age: 28, email: "lina82@hotmail.com", phone: "056712345", city: "Amman", hired: true},
-//     {name: "Ali Khalid", age: 30, email: "ali.khalid@email.com", phone: "050987654", city: "Cairo", hired: true},
-//     {name: "Yasmin Hassan", age: 22, email: "yasmin33@gmail.com", phone: "053456789", city: "Dubai", hired: false},
-//     {name: "Mohammed Saed", age: 27, email: "mohammed.saed@email.com", phone: "055783421", city: "Riyadh", hired: true},
-//     {name: "Yazan Mahmoud", age: 29, email: "ahmed.mahmoud@email.com", phone: "058612345", city: "Cairo", hired: false},
-//     {name: "Raghad Abdullah", age: 26, email: "sara.abdullah@email.com", phone: "054998877", city: "Jeddah", hired: true},
-//     {name: "Omar Saleh", age: 31, email: "omar.saleh@gmail.com", phone: "051234567", city: "Riyadh", hired: true},
-//     {name: "Layla Hussein", age: 23, email: "layla.hussein@email.com", phone: "057712345", city: "Baghdad", hired: false},
-//     {name: "Nour Ali", age: 25, email: "nour_ali@hotmail.com", phone: "052344321", city: "Kuwait City", hired: true}
-// ]
-
-// Save data to local Storage
-//localStorage.setItem('profiles', JSON.stringify(profilesObj));
+// Using the fetch API (modern approach)
+fetch('profiles.json')
+    .then(response => response.json())
+    .then(parsedData => {
+        localStorage.setItem('profiles', JSON.stringify(parsedData));
+    })
+    .catch(error => {
+        console.error('Error fetching JSON:', error);
+    });
 
 // Load data from local Storage
 const savedProfiles = JSON.parse(localStorage.getItem('profiles'));
-
-// Sort the data
-savedProfiles.sort((a, b) => {
-    const nameA = a.name.toLowerCase();
-    const nameB = b.name.toLowerCase();
-    if (nameA < nameB) {
-        return -1;
-    }
-    if (nameA > nameB) {
-        return 1;
-    }
-    return 0;
-});
 
 // Refresh button action
 document.getElementById('refreshButton')
@@ -61,7 +33,6 @@ for( let i=0 ; i<savedProfiles.length ; i++){
     profile.querySelector("#pushButton").addEventListener('click', () => {showFullProfile(savedProfiles[i]);});
     allProfiles.push(profile)
     profile.querySelector("#hiredButton").addEventListener('click', () => {hierdProfile(savedProfiles[i], i);});
-
 }
 
 // Random number with out repeat
@@ -79,15 +50,32 @@ function getRandomNoRepeat(min, max) {
         getRandomNoRepeat.numbers.splice(index, 1);
         randomNum.push(randomNumber);
     }
-    randomNum.sort(function(a, b){return a - b});
-
     return randomNum;
 }
 
-// Display 8 (randomized and sorted by name) Engineers by default at every refresh 
-const random = getRandomNoRepeat(0, allProfiles.length-1);
+// Display 8 (randomized and sorted by name) Engineers by default at every refresh
+const random = getRandomNoRepeat(0, savedProfiles.length-1);
 for( let i=0 ; i < numberOfProfiles ; i++){
-    profilesContainer.append(allProfiles[random[i]])
+    tempProfileContainer.push(allProfiles[random[i]]);
+}
+sortEightProfiles ();
+
+function sortEightProfiles (){
+    tempProfileContainer.sort((a, b) => {
+        const nameA = a.querySelector("[mini-profile-header]").textContent.toLowerCase();
+        const nameB = b.querySelector("[mini-profile-header]").textContent.toLowerCase();
+        if (nameA < nameB) {
+            return -1;
+        }
+        if (nameA > nameB) {
+            return 1;
+        }
+            return 0;
+    });
+
+    for( let i=0 ; i < numberOfProfiles ; i++){
+        profilesContainer.appendChild(tempProfileContainer[i]);
+    }
 }
 
 // Search function
@@ -113,12 +101,12 @@ profileSearch.addEventListener("input", (event) => {
         }
         return 0;
     });
-    
+
     filteredProfiles.forEach(profile => {
         profilesContainer.appendChild(profile);
-    });  
+    });
 });
-    
+
 // Display full data (Popup)
 const showFullProfile = (profile) => {
     let hiredColor = 'red'
@@ -167,4 +155,3 @@ const hierdProfile = (profile, ind) => {
         localStorage.setItem('profiles', JSON.stringify(savedProfiles));
     }
 }
-
