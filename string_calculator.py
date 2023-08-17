@@ -6,15 +6,25 @@ import pytest
 def string_adder(string_input):
 
     result = 0
-    temp_string_input = string_input
 
     comma_count = string_input.count(",")
     new_lines_count = string_input.count("\n")
 
     delimiters = [",", "\n"]
+
+    if string_input.startswith("//"):
+        start_index = string_input.find("//")
+        end_index = string_input.find("\n")
+
+        if start_index != -1 and end_index != -1:
+            new_delimiter = (string_input[start_index + len("//"):end_index]
+                             .strip())
+            delimiters.append(new_delimiter)
+            string_input = string_input.split("\n", 1)[1]
+
     for delimiter in delimiters:
-        temp_string_input = " ".join(temp_string_input.split(delimiter))
-    nums = temp_string_input.split()
+        string_input = " ".join(string_input.split(delimiter))
+    nums = string_input.split()
 
     if string_input.endswith("\n"):
         new_lines_count -= 1
@@ -35,7 +45,6 @@ def string_adder(string_input):
 
 
 # ----------------------------------------------------------------------------
-
 
 # ----------------------------------------------------------------------------
 
@@ -58,3 +67,7 @@ def test_new_lines():
         string_adder("1,\n")
     with pytest.raises(Exception):
         string_adder("\n,1,")
+
+
+def test_different_delimiters():
+    assert string_adder("//;\n1;2") == 3
