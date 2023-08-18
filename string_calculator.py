@@ -35,16 +35,25 @@ def string_adder(string_input):
     if len(string_input) == 0:
         return 0
 
+    neg_nums = []
+
     if (comma_count + new_lines_count + 1) != len(nums):
         raise Exception(f"The {string_input} input is not valid")
     else:
         for num in nums:
+            if int(num) < 0:
+                neg_nums.append(num)
+
+        for num in nums:
+            if int(num) < 0:
+                raise Exception(f"Negatives not allowed {neg_nums}")
             result += int(num)
 
     return result
 
 
 # ----------------------------------------------------------------------------
+
 
 # ----------------------------------------------------------------------------
 
@@ -71,3 +80,10 @@ def test_new_lines():
 
 def test_different_delimiters():
     assert string_adder("//;\n1;2") == 3
+
+
+def test_negatives_nums():
+    with pytest.raises(Exception):
+        string_adder("-1,-2,7,9,-6")
+    with pytest.raises(Exception):
+        string_adder("//;\n1;-2")
