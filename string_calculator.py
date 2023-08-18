@@ -6,9 +6,7 @@ import pytest
 def string_adder(string_input):
 
     result = 0
-
-    comma_count = string_input.count(",")
-    new_lines_count = string_input.count("\n")
+    delimiters_count = 0
 
     delimiters = [",", "\n"]
 
@@ -23,11 +21,14 @@ def string_adder(string_input):
             string_input = string_input.split("\n", 1)[1]
 
     for delimiter in delimiters:
+        delimiters_count += string_input.count(delimiter)
+
+    for delimiter in delimiters:
         string_input = " ".join(string_input.split(delimiter))
     nums = string_input.split()
 
     if string_input.endswith("\n"):
-        new_lines_count -= 1
+        delimiters_count -= 1
 
     while "" in nums:
         nums.remove("")
@@ -36,8 +37,7 @@ def string_adder(string_input):
         return 0
 
     neg_nums = []
-
-    if (comma_count + new_lines_count + 1) != len(nums):
+    if (delimiters_count + 1) != len(nums):
         raise Exception(f"The {string_input} input is not valid")
     else:
         for num in nums:
@@ -47,12 +47,14 @@ def string_adder(string_input):
         for num in nums:
             if int(num) < 0:
                 raise Exception(f"Negatives not allowed {neg_nums}")
-            result += int(num)
+            if int(num) <= 1000:
+                result += int(num)
 
     return result
 
 
 # ----------------------------------------------------------------------------
+
 
 
 # ----------------------------------------------------------------------------
@@ -80,10 +82,15 @@ def test_new_lines():
 
 def test_different_delimiters():
     assert string_adder("//;\n1;2") == 3
-
+    assert string_adder("//;\n1;2;2;4") == 9
 
 def test_negatives_nums():
     with pytest.raises(Exception):
         string_adder("-1,-2,7,9,-6")
     with pytest.raises(Exception):
         string_adder("//;\n1;-2")
+
+def test_large_nums():
+    assert string_adder("1,2,1000") == 1003
+    assert string_adder("2,1001") == 2
+    assert string_adder("//;\n1;2;1") == 4
