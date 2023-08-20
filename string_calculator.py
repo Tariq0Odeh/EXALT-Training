@@ -1,15 +1,16 @@
 import pytest
 import re
 
-# ----------------------------------------------------------------------------
-
 
 def string_adder(string_input):
 
+    if len(string_input) == 0:
+        return 0
+
     result = 0
     delimiters_count = 0
-
     delimiters = [",", "\n"]
+    neg_nums = []
 
     if string_input.startswith("//"):
         start_index = string_input.find("//")
@@ -25,13 +26,13 @@ def string_adder(string_input):
                 delimiters.append(new_delimiter)
 
             string_input = string_input.split("\n", 1)[1]
-            print(delimiters)
 
     for delimiter in delimiters:
         delimiters_count += string_input.count(delimiter)
 
     for delimiter in delimiters:
         string_input = " ".join(string_input.split(delimiter))
+
     nums = string_input.split()
 
     if string_input.endswith("\n"):
@@ -40,10 +41,6 @@ def string_adder(string_input):
     while "" in nums:
         nums.remove("")
 
-    if len(string_input) == 0:
-        return 0
-
-    neg_nums = []
     if (delimiters_count + 1) != len(nums):
         raise Exception(f"The {string_input} input is not valid")
     else:
@@ -58,11 +55,6 @@ def string_adder(string_input):
                 result += int(num)
 
     return result
-
-
-# ----------------------------------------------------------------------------
-
-# ----------------------------------------------------------------------------
 
 
 def test_simple():
@@ -107,3 +99,9 @@ def test_delimiters_length():
     assert string_adder("//[***]\n1***2***3") == 6
     assert string_adder("//[@#$]\n5@#$2@#$3@#$9") == 19
     assert string_adder("//[##]\n6##9##3") == 18
+
+
+def test_delimiters_all():
+    assert string_adder("//[**][%%%%]\n3**2%%%%3") == 8
+    assert string_adder("//[#][!!][!@!]\n9#4!!3!@!5") == 21
+    assert string_adder("//[*][%$%][:]\n4:2:1*3%$%5") == 15
