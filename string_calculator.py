@@ -3,59 +3,64 @@ import re
 
 
 def string_adder(string_input):
+    try:
+        if len(string_input) == 0:
+            return 0
 
-    if len(string_input) == 0:
-        return 0
+        result = 0
+        delimiters_count = 0
+        delimiters = [",", "\n"]
+        neg_nums = []
 
-    result = 0
-    delimiters_count = 0
-    delimiters = [",", "\n"]
-    neg_nums = []
+        if string_input.startswith("//"):
+            start_index = string_input.find("//")
+            end_index = string_input.find("\n")
 
-    if string_input.startswith("//"):
-        start_index = string_input.find("//")
-        end_index = string_input.find("\n")
+            if start_index != -1 and end_index != -1:
+                new_delimiter = string_input[
+                    start_index + len("//") : end_index
+                ].strip()
+                if "[" in string_input:
+                    pattern = r"\[(.*?)\]"
+                    matches = re.findall(pattern, new_delimiter)
+                    delimiters = delimiters + matches
+                else:
+                    delimiters.append(new_delimiter)
 
-        if start_index != -1 and end_index != -1:
-            new_delimiter = (string_input[start_index + len("//"):end_index].strip())
-            if "[" in string_input:
-                pattern = r'\[(.*?)\]'
-                matches = re.findall(pattern, new_delimiter)
-                delimiters = delimiters + matches
-            else:
-                delimiters.append(new_delimiter)
+                string_input = string_input.split("\n", 1)[1]
 
-            string_input = string_input.split("\n", 1)[1]
+        for delimiter in delimiters:
+            delimiters_count += string_input.count(delimiter)
 
-    for delimiter in delimiters:
-        delimiters_count += string_input.count(delimiter)
+        for delimiter in delimiters:
+            string_input = " ".join(string_input.split(delimiter))
 
-    for delimiter in delimiters:
-        string_input = " ".join(string_input.split(delimiter))
+        nums = string_input.split()
 
-    nums = string_input.split()
+        if string_input.endswith("\n"):
+            delimiters_count -= 1
 
-    if string_input.endswith("\n"):
-        delimiters_count -= 1
+        while "" in nums:
+            nums.remove("")
 
-    while "" in nums:
-        nums.remove("")
+        if (delimiters_count + 1) != len(nums):
+            raise Exception(f"The {string_input} input is not valid")
+        else:
+            for num in nums:
+                if int(num) < 0:
+                    neg_nums.append(num)
 
-    if (delimiters_count + 1) != len(nums):
-        raise Exception(f"The {string_input} input is not valid")
-    else:
-        for num in nums:
-            if int(num) < 0:
-                neg_nums.append(num)
+            for num in nums:
+                if int(num) < 0:
+                    raise Exception(f"Negatives not allowed {neg_nums}")
+                if int(num) <= 1000:
+                    result += int(num)
+        return result
 
-        for num in nums:
-            if int(num) < 0:
-                raise Exception(f"Negatives not allowed {neg_nums}")
-            if int(num) <= 1000:
-                result += int(num)
-
-    return result
-
+    except:
+        raise Exception(f"Input {string_input} is not valid")
+    finally:
+        print("Operation Accomplished Successfully")
 
 def test_simple():
     assert string_adder("") == 0
@@ -105,3 +110,9 @@ def test_delimiters_all():
     assert string_adder("//[**][%%%%]\n3**2%%%%3") == 8
     assert string_adder("//[#][!!][!@!]\n9#4!!3!@!5") == 21
     assert string_adder("//[*][%$%][:]\n4:2:1*3%$%5") == 15
+
+def test_invalid_input():
+    with pytest.raises(Exception):
+        string_adder("/£/;2\n1;-2")
+    with pytest.raises(Exception):
+        string_adder("/£1,2,4")
