@@ -1,4 +1,5 @@
 import pytest
+import re
 
 # ----------------------------------------------------------------------------
 
@@ -15,10 +16,16 @@ def string_adder(string_input):
         end_index = string_input.find("\n")
 
         if start_index != -1 and end_index != -1:
-            new_delimiter = (string_input[start_index + len("//"):end_index]
-                             .strip())
-            delimiters.append(new_delimiter)
+            new_delimiter = (string_input[start_index + len("//"):end_index].strip())
+            if "[" in string_input:
+                pattern = r'\[(.*?)\]'
+                matches = re.findall(pattern, new_delimiter)
+                delimiters = delimiters + matches
+            else:
+                delimiters.append(new_delimiter)
+
             string_input = string_input.split("\n", 1)[1]
+            print(delimiters)
 
     for delimiter in delimiters:
         delimiters_count += string_input.count(delimiter)
@@ -55,8 +62,6 @@ def string_adder(string_input):
 
 # ----------------------------------------------------------------------------
 
-
-
 # ----------------------------------------------------------------------------
 
 
@@ -84,13 +89,21 @@ def test_different_delimiters():
     assert string_adder("//;\n1;2") == 3
     assert string_adder("//;\n1;2;2;4") == 9
 
+
 def test_negatives_nums():
     with pytest.raises(Exception):
         string_adder("-1,-2,7,9,-6")
     with pytest.raises(Exception):
         string_adder("//;\n1;-2")
 
+
 def test_large_nums():
     assert string_adder("1,2,1000") == 1003
     assert string_adder("2,1001") == 2
-    assert string_adder("//;\n1;2;1") == 4
+    assert string_adder("//;\n1;2;1234") == 3
+
+
+def test_delimiters_length():
+    assert string_adder("//[***]\n1***2***3") == 6
+    assert string_adder("//[@#$]\n5@#$2@#$3@#$9") == 19
+    assert string_adder("//[##]\n6##9##3") == 18
