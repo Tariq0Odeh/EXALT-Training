@@ -7,6 +7,7 @@ from .serializers import ProfileSerializer, ProfileUpdateSerializer, ProfileSear
 from django.contrib.auth import get_user_model
 User = get_user_model()
 
+
 class CreateProfileView(generics.CreateAPIView):
     queryset = Profile.objects.all()
     serializer_class = ProfileSerializer
@@ -18,6 +19,7 @@ class CreateProfileView(generics.CreateAPIView):
 
 class EditProfileView(APIView):
     permission_classes = [permissions.IsAuthenticated]
+
     def put(self, request):
         serializer = ProfileUpdateSerializer(data=request.data)
         if serializer.is_valid():
@@ -34,6 +36,7 @@ class EditProfileView(APIView):
 
 class SearchProfileView(APIView):
     permission_classes = [permissions.IsAuthenticated]
+
     def post(self, request):
         serializer = ProfileSearchSerializer(data=request.data)
         if serializer.is_valid():
