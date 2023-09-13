@@ -7,9 +7,11 @@ from rest_framework.views import APIView
 
 from .serializers import (PostSerializer, PostListSerializer,
                           PostDeleteSerializer, CommentSerializer,
-                          CommentListSerializer)
-from .models import Post, Comment
+                          CommentListSerializer, LikeSerializer,
+                          LikeListSerializer, AllLikeSerializer)
+from .models import Post, Comment, Like
 from django.contrib.auth import get_user_model
+
 User = get_user_model()
 
 
@@ -32,17 +34,18 @@ class EditPostView(generics.UpdateAPIView):
     serializer_class = PostSerializer
 
 
-class LargeResultsSetPagination(PageNumberPagination):
-    page_size = 5
+class CustomPagination(PageNumberPagination):
+    page_size = 2
     page_size_query_param = 'page_size'
-    max_page_size = 5
+    max_page_size = 2
 
 
-class ListPostView(generics.ListAPIView): # Need to edit after make friends feature
+class ListPostView(
+    generics.ListAPIView):  # Need to edit after make friends feature
     queryset = Post.objects.all()
     serializer_class = PostListSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
-    pagination_class = LargeResultsSetPagination
+    pagination_class = CustomPagination
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
@@ -64,9 +67,10 @@ class EditCommentView(generics.UpdateAPIView):
     serializer_class = CommentSerializer
 
 
-class ListCommentView(generics.CreateAPIView):
+class ListCommentView(generics.ListAPIView):
     queryset = Comment.objects.all()
     serializer_class = CommentListSerializer
+    pagination_class = CustomPagination
 
     def post(self, request):
         serializer = CommentListSerializer(data=request.data)
@@ -75,18 +79,46 @@ class ListCommentView(generics.CreateAPIView):
             post = get_object_or_404(Post, id=post_id)
             comments = Comment.objects.filter(post=post)
             serialized_comments = CommentSerializer(comments, many=True)
-            return Response(serialized_comments.data, status=status.HTTP_200_OK)
+            return self.get_paginated_response(serialized_comments.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-# return Response({"Heereee"}, status=status.HTTP_200_OK)
+class DeleteCommentView(generics.DestroyAPIView):
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
 
-# class ListCommentView(generics.ListAPIView):
-#     post = get_object_or_404(Post, id=post_id)
-#     queryset = Comment.objects.all()
-#     serializer_class = CommentSerializer
-#     permission_classes = [IsAuthenticatedOrReadOnly]
-#     pagination_class = LargeResultsSetPagination
-#
-#     def perform_create(self, serializer):
-#         serializer.save(user=self.request.user)
+
+class CreateLikeView(generics.CreateAPIView):
+    serializer_class = LikeSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def perform_create(self, serializer):
+        post_id = self.request.data.get('post_id')
+        post = get_object_or_404(Post, id=post_id)
+        user = self.request.user
+        existing_like = Like.objects.filter(user=user, post=post).first()
+        if existing_like:
+            return
+        serializer.save(user=user, post=post)
+
+
+class DeleteLikeView(generics.DestroyAPIView):
+    queryset = Like.objects.all()
+    serializer_class = LikeSerializer
+
+
+class ListLikeView(generics.ListAPIView):
+    queryset = Like.objects.all()
+    serializer_class = LikeListSerializer
+
+    def post(self, request):
+        serializer = LikeListSerializer(data=request.data)
+        if serializer.is_valid():
+            post_id = serializer.validated_data.get('post_id')
+            post = get_object_or_404(Post, id=post_id)
+            likes = Like.objects.filter(post=post)
+            serialized_likes = AllLikeSerializer(likes, many=True)
+            return Response(serialized_likes.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
