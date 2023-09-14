@@ -15,10 +15,8 @@ class EditProfileSerializer(serializers.ModelSerializer):
 
 
 class SearchProfileSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(max_length=150)
-
     class Meta:
         model = Profile
-        fields = ['username']
+        fields = ['bio', 'website', 'image']
 
 

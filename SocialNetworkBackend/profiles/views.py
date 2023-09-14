@@ -7,9 +7,8 @@ from .serializers import (CreateProfileSerializer,
                           EditProfileSerializer,
                           SearchProfileSerializer)
 from django.contrib.auth import get_user_model
-User = get_user_model()
-from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters
+User = get_user_model()
 
 
 class CreateProfileView(generics.CreateAPIView):
@@ -38,15 +37,21 @@ class EditProfileView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class SearchProfileView(generics.ListAPIView):
-    serializer_class = CreateProfileSerializer
+class SearchProfileView(generics.RetrieveAPIView):
+    serializer_class = SearchProfileSerializer
     filter_backends = [filters.SearchFilter]
-    permission_classes = [IsAuthenticatedOrReadOnly]
-    search_fields = ['bio']
+    search_fields = ['username']
 
-    def get_queryset(self):
-        queryset = Profile.objects.all()
-        username = self.request.query_params.get('username', None)
-        if username is not None:
-            queryset = queryset.filter(user__username__icontains=username)
-        return queryset
+    def get_object(self):
+        username = self.request.query_params.get('username')
+        if username is None:
+            return Response(
+                {"message": "Please provide a 'username' query parameter."},
+                status=status.HTTP_400_BAD_REQUEST)
+        try:
+            user = User.objects.get(name=username)
+            profile = Profile.objects.get(user=user)
+            return profile
+        except User.DoesNotExist:
+            raise Response("User not found",
+                           status=status.HTTP_400_BAD_REQUEST)

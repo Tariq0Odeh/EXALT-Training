@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from .serializers import (UserSerializer, ChangePasswordSerializer,
                           DeactivateSerializer)
 from rest_framework.response import Response
-from rest_framework import status, permissions
+from rest_framework import status, permissions, generics
 
 
 class RegisterView(APIView):

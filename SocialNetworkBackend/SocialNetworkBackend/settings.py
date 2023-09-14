@@ -88,6 +88,12 @@ DATABASES = {
     }
 }
 
+# 'ENGINE': 'django.db.backends.postgresql_psycopg2',
+# 'NAME': 'SocialNetwork',
+# 'USER': 'postgres',
+# 'PASSWORD': '100200',
+# 'PORT': 5432,
+# 'HOST': 'localhost',
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
