@@ -7,7 +7,6 @@ from .serializers import (CreateProfileSerializer,
                           EditProfileSerializer,
                           SearchProfileSerializer)
 from django.contrib.auth import get_user_model
-from rest_framework import filters
 User = get_user_model()
 
 
@@ -39,15 +38,12 @@ class EditProfileView(APIView):
 
 class SearchProfileView(generics.RetrieveAPIView):
     serializer_class = SearchProfileSerializer
-    filter_backends = [filters.SearchFilter]
-    search_fields = ['username']
 
     def get_object(self):
         username = self.request.query_params.get('username')
         if username is None:
-            return Response(
-                {"message": "Please provide a 'username' query parameter."},
-                status=status.HTTP_400_BAD_REQUEST)
+            raise Response("Please provide a 'username' query parameter",
+                           status=status.HTTP_400_BAD_REQUEST)
         try:
             user = User.objects.get(name=username)
             profile = Profile.objects.get(user=user)

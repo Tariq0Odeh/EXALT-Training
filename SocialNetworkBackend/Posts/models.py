@@ -7,8 +7,8 @@ User = settings.AUTH_USER_MODEL
 class Post(models.Model):
     user = models.ForeignKey(User, related_name='posts',
                              on_delete=models.CASCADE)
-    title = models.CharField(max_length=100, blank=True)
-    body = models.TextField(blank=True)
+    title = models.CharField(max_length=100)
+    body = models.TextField(max_length=500)
     created = models.DateTimeField(auto_now_add=True)
 
     class Meta:
