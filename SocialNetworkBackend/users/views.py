@@ -1,5 +1,6 @@
 from rest_framework.views import APIView
-from .serializers import UserSerializer, ChangePasswordSerializer, DeactivateSerializer
+from .serializers import (UserSerializer, ChangePasswordSerializer,
+                          DeactivateSerializer)
 from rest_framework.response import Response
 from rest_framework import status, permissions
 
@@ -14,6 +15,7 @@ class RegisterView(APIView):
 
 class ChangePasswordView(APIView):
     permission_classes = [permissions.IsAuthenticated]
+
     def put(self, request):
         serializer = ChangePasswordSerializer(data=request.data)
         if serializer.is_valid():
@@ -32,6 +34,7 @@ class ChangePasswordView(APIView):
 
 class DeactivateView(APIView):
     permission_classes = [permissions.IsAuthenticated]
+
     def get(self, request):
         serializer = DeactivateSerializer(data=request.data)
         if serializer.is_valid():

@@ -2,22 +2,22 @@ from .models import Post, Comment, Like
 from rest_framework import serializers
 
 
-class PostSerializer(serializers.ModelSerializer):
+class CreatePostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
         fields = ['id', 'title', 'body']
 
 
-class PostListSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Post
-        fields = ['id', 'title', 'body', 'user']
-
-
-class PostDeleteSerializer(serializers.ModelSerializer):
+class DeletePostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
         fields = []
+
+
+class ListPostSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Post
+        fields = ['id', 'title', 'body', 'user']
 
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -40,8 +40,9 @@ class LikeSerializer(serializers.ModelSerializer):
         fields = ['post_id']
 
 
-class LikeListSerializer(serializers.ModelSerializer):
+class ListLikeSerializer(serializers.ModelSerializer):
     post_id = serializers.IntegerField()
+
     class Meta:
         model = Comment
         fields = ['post_id']

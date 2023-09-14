@@ -3,14 +3,18 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import Profile
-from .serializers import ProfileSerializer, ProfileUpdateSerializer, ProfileSearchSerializer
+from .serializers import (CreateProfileSerializer,
+                          EditProfileSerializer,
+                          SearchProfileSerializer)
 from django.contrib.auth import get_user_model
 User = get_user_model()
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters
 
 
 class CreateProfileView(generics.CreateAPIView):
     queryset = Profile.objects.all()
-    serializer_class = ProfileSerializer
+    serializer_class = CreateProfileSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def perform_create(self, serializer):
@@ -21,7 +25,7 @@ class EditProfileView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def put(self, request):
-        serializer = ProfileUpdateSerializer(data=request.data)
+        serializer = EditProfileSerializer(data=request.data)
         if serializer.is_valid():
             profile = request.user.profile
             profile.bio = serializer.data.get('bio')
@@ -34,22 +38,15 @@ class EditProfileView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class SearchProfileView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+class SearchProfileView(generics.ListAPIView):
+    serializer_class = CreateProfileSerializer
+    filter_backends = [filters.SearchFilter]
+    permission_classes = [IsAuthenticatedOrReadOnly]
+    search_fields = ['bio']
 
-    def post(self, request):
-        serializer = ProfileSearchSerializer(data=request.data)
-        if serializer.is_valid():
-            username = serializer.validated_data['username']
-            try:
-                user = User.objects.get(name=username)
-                profile = Profile.objects.get(user=user)
-                return Response(ProfileSerializer(profile).data)
-            except User.DoesNotExist:
-                return Response({'detail': 'User not found.'},
-                                status=status.HTTP_404_NOT_FOUND)
-            except Profile.DoesNotExist:
-                return Response({'detail': 'Profile not found.'},
-                                status=status.HTTP_404_NOT_FOUND)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def get_queryset(self):
+        queryset = Profile.objects.all()
+        username = self.request.query_params.get('username', None)
+        if username is not None:
+            queryset = queryset.filter(user__username__icontains=username)
+        return queryset

@@ -12,6 +12,4 @@ class Profile(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"{self.user.name} Profile"
-
-
+        return f"{self.user.name} Profile ({self.id})"

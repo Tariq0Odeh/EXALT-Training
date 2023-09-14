@@ -43,4 +43,4 @@ class UserData(AbstractUser):
     REQUIRED_FIELDS = ['name']
 
     def __str__(self):
-        return self.name
+        return f"{self.name} ({self.id})"

@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'profiles',
     'Posts',
+    'django_filters',
 ]
 
 MIDDLEWARE = [
