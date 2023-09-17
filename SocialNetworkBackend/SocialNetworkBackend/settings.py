@@ -42,9 +42,11 @@ INSTALLED_APPS = [
     'users',
     'rest_framework',
     'rest_framework_simplejwt',
+    'django_filters',
     'profiles',
     'Posts',
-    'django_filters',
+    'friendship',
+    'friends'
 ]
 
 MIDDLEWARE = [

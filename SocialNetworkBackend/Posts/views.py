@@ -1,17 +1,15 @@
 from django.shortcuts import get_object_or_404
-from rest_framework import generics, status, permissions
+from friendship.models import Friend
+from rest_framework import generics, status
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
+from friends.serializers import FriendSerializer
 from .serializers import (CreatePostSerializer, ListPostSerializer,
-                          DeletePostSerializer, CommentSerializer,
-                          CommentListSerializer, LikeSerializer,
-                          ListLikeSerializer, AllLikeSerializer)
+                          CommentSerializer, LikeSerializer)
 from .models import Post, Comment, Like
 from django.contrib.auth import get_user_model
-
 User = get_user_model()
 
 
@@ -23,20 +21,10 @@ class CreatePostView(generics.CreateAPIView):
         serializer.save(user=self.request.user)
 
 
-class SinglePostView(generics.RetrieveAPIView):
+class ShowEditDeletePostView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Post.objects.all()
     serializer_class = CreatePostSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
-
-
-class DeletePostView(generics.DestroyAPIView):
-    queryset = Post.objects.all()
-    serializer_class = DeletePostSerializer
-
-
-class EditPostView(generics.UpdateAPIView):
-    queryset = Post.objects.all()
-    serializer_class = CreatePostSerializer
 
 
 class CustomPagination(PageNumberPagination):
@@ -45,21 +33,26 @@ class CustomPagination(PageNumberPagination):
     max_page_size = 5
 
 
-# -----------------------------------------------------------------------------
-
-
-class ListPostView(
-    generics.ListAPIView):  # Need to edit after make friends feature
-    queryset = Post.objects.all()
-    serializer_class = ListPostSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+class ListPostCommentsView(generics.ListAPIView):
+    serializer_class = CommentSerializer
     pagination_class = CustomPagination
 
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+    def get_queryset(self):
+        post_id = self.kwargs['pk']
+        return Comment.objects.filter(post_id=post_id)
 
 
-# -----------------------------------------------------------------------------
+class ListPostView(generics.ListAPIView):
+    permission_classes = [IsAuthenticatedOrReadOnly]
+    serializer_class = ListPostSerializer
+    pagination_class = CustomPagination
+
+    def get_queryset(self):
+        user = self.request.user
+        friends = Friend.objects.friends(user)
+        friend_ids = [friend.id for friend in friends]
+        queryset = Post.objects.filter(user_id__in=friend_ids)
+        return queryset
 
 
 class CreateCommentView(generics.CreateAPIView):
@@ -68,41 +61,19 @@ class CreateCommentView(generics.CreateAPIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def perform_create(self, serializer):
-        post_id = self.request.data.get('post_id')
+        post_id = self.kwargs['pk']
         post = get_object_or_404(Post, id=post_id)
         serializer.save(user=self.request.user, post=post)
 
 
-class SingleCommentView(generics.RetrieveAPIView):
-    queryset = Comment.objects.all()
-    serializer_class = CreatePostSerializer
+class ShowEditDeleteCommentsView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = CommentSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
 
-
-class EditCommentView(generics.UpdateAPIView):
-    queryset = Comment.objects.all()
-    serializer_class = CommentSerializer
-
-
-class ListCommentView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Comment.objects.all()
-    serializer_class = CommentListSerializer
-    pagination_class = CustomPagination
-
-    def post(self, request):
-        serializer = CommentListSerializer(data=request.data)
-        if serializer.is_valid():
-            post_id = serializer.validated_data.get('post_id')
-            post = get_object_or_404(Post, id=post_id)
-            comments = Comment.objects.filter(post=post)
-            serialized_comments = CommentSerializer(comments, many=True)
-            return self.get_paginated_response(serialized_comments.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class DeleteCommentView(generics.DestroyAPIView):
-    queryset = Comment.objects.all()
-    serializer_class = CommentSerializer
+    def get_queryset(self):
+        post_id = self.kwargs['id']
+        comment_id = self.kwargs['pk']
+        return Comment.objects.filter(post_id=post_id, id=comment_id)
 
 
 class CreateLikeView(generics.CreateAPIView):
@@ -110,30 +81,32 @@ class CreateLikeView(generics.CreateAPIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def perform_create(self, serializer):
-        post_id = self.request.data.get('post_id')
+        post_id = self.kwargs['pk']
         post = get_object_or_404(Post, id=post_id)
         user = self.request.user
-        existing_like = Like.objects.filter(user=user, post=post).first()
-        if existing_like:
-            return
+
+        existing_comment = Like.objects.filter(user=user, post=post)
+        if existing_comment.exists():
+            return Response({"One Like per post"},
+                            status=status.HTTP_400_BAD_REQUEST)
+
         serializer.save(user=user, post=post)
 
 
-class DeleteLikeView(generics.DestroyAPIView):
-    queryset = Like.objects.all()
+class ShowDeleteLikesView(generics.RetrieveDestroyAPIView):
     serializer_class = LikeSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def get_queryset(self):
+        post_id = self.kwargs['id']
+        like_id = self.kwargs['pk']
+        return Like.objects.filter(post_id=post_id, id=like_id)
 
 
-class ListLikeView(generics.ListAPIView):
-    queryset = Like.objects.all()
+class ListPostLikesView(generics.ListAPIView):
     serializer_class = LikeSerializer
+    pagination_class = CustomPagination
 
-    def post(self, request):
-        serializer = LikeSerializer(data=request.data)
-        if serializer.is_valid():
-            post_id = serializer.validated_data.get('post_id')
-            post = get_object_or_404(Post, id=post_id)
-            likes = Like.objects.filter(post=post)
-            serialized_likes = AllLikeSerializer(likes, many=True)
-            return Response(serialized_likes.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def get_queryset(self):
+        post_id = self.kwargs['pk']
+        return Like.objects.filter(post_id=post_id)
