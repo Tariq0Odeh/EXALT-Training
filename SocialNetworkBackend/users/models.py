@@ -36,11 +36,15 @@ class UserData(AbstractUser):
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
+    friends = models.ManyToManyField('UserData', blank=True)
 
     objects = UserManager()
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['name']
+
+    def get_friends(self):
+        return self.friends.all()
 
     def __str__(self):
         return f"{self.name} ({self.id})"

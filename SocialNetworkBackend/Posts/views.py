@@ -1,11 +1,10 @@
 from django.shortcuts import get_object_or_404
-from friendship.models import Friend
 from rest_framework import generics, status
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 
-from friends.serializers import FriendSerializer
+# from friends.serializers import FriendSerializer
 from .serializers import (CreatePostSerializer, ListPostSerializer,
                           CommentSerializer, LikeSerializer)
 from .models import Post, Comment, Like
@@ -49,10 +48,10 @@ class ListPostView(generics.ListAPIView):
 
     def get_queryset(self):
         user = self.request.user
-        friends = Friend.objects.friends(user)
-        friend_ids = [friend.id for friend in friends]
-        queryset = Post.objects.filter(user_id__in=friend_ids)
-        return queryset
+        # friends = Friend.objects.friends(user)
+        # friend_ids = [friend.id for friend in friends]
+        # queryset = Post.objects.filter(user_id__in=friend_ids)
+        return user
 
 
 class CreateCommentView(generics.CreateAPIView):

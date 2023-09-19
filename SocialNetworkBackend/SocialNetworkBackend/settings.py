@@ -45,8 +45,8 @@ INSTALLED_APPS = [
     'django_filters',
     'profiles',
     'Posts',
-    'friendship',
-    'friends'
+    'stories',
+    'Friends'
 ]
 
 MIDDLEWARE = [

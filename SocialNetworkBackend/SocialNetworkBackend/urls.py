@@ -23,5 +23,6 @@ urlpatterns = [
     path('user/', include('users.urls')),
     path('profile/', include('profiles.urls')),
     path('posts/', include('Posts.urls')),
-    path('friends/', include('friends.urls')),
+    path('users/', include('Friends.urls')),
+    path('stories/', include('stories.urls'))
 ]
