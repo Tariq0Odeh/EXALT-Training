@@ -4,8 +4,6 @@ from django.conf import settings
 User = settings.AUTH_USER_MODEL
 
 
-
-
 class Story(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     text = models.CharField(max_length=200)
@@ -15,4 +13,4 @@ class Story(models.Model):
                                            timedelta(hours=24))
 
     def __str__(self):
-        return f"{self.user.name} Story ({self.id})"
+        return f"{self.user.name} Story-({self.id})"

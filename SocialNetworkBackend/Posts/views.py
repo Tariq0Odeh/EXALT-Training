@@ -48,10 +48,10 @@ class ListPostView(generics.ListAPIView):
 
     def get_queryset(self):
         user = self.request.user
-        # friends = Friend.objects.friends(user)
-        # friend_ids = [friend.id for friend in friends]
-        # queryset = Post.objects.filter(user_id__in=friend_ids)
-        return user
+        friends = user.get_friends()
+        friend_ids = [friend.id for friend in friends]
+        queryset = Post.objects.filter(user_id__in=friend_ids)
+        return queryset
 
 
 class CreateCommentView(generics.CreateAPIView):
